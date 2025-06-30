@@ -18,3 +18,13 @@ This is a browser-based Chess game built with **React**, **TypeScript**, and mod
 - **Vite / Create React App** – Fast development setup (adjust based on your setup)
 
 ## 📁 Project Structure
+
+/src
+├── components/
+│ ├── Chessboard.tsx
+│ ├── Tile.tsx
+│ └── Pieces.tsx
+├── assets/
+│ └── piece images (.png or .svg)
+├── App.tsx
+└── index.tsx

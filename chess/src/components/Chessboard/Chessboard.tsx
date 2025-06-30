@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import './Chessboard.css';
 import Tile from "../Tile/tile"; 
+import { useRef, useState } from 'react';
 
 const verticalaxis=[1,2,3,4,5,6,7,8]
 const horizontalaxis=["a","b","c","d","e","f","g","h"];
@@ -10,30 +11,37 @@ interface Piece{
     x:number
     y:number
 }
-const pieces:Piece[]=[];
+
+const intialBoardState: Piece[] = [];
 
 for(let p=0; p < 2; p++){
     const type = (p === 0) ? "b" : "w";
     const y= (p === 0) ? 7 : 0; 
-    
-pieces.push({image:`/images/rook-${type}.svg`,x:0,y});
-pieces.push({image:`/images/rook-${type}.svg`,x:7,y});
-pieces.push({image:`/images/rknight-${type}.svg`,x:1,y});
-pieces.push({image:`/images/rknight-${type}.svg`,x:6,y});
-pieces.push({image:`/images/bishop-${type}.svg`,x:2,y});
-pieces.push({image:`/images/bishop-${type}.svg`,x:5,y});
-pieces.push({image:`/images/queen-${type}.svg`,x:3,y});
-pieces.push({image:`/images/king-${type}.svg`,x:4,y});
+        
+    intialBoardState.push({image:`/images/rook-${type}.svg`,x:0,y});
+    intialBoardState.push({image:`/images/rook-${type}.svg`,x:7,y});
+    intialBoardState.push({image:`/images/rknight-${type}.svg`,x:1,y});
+    intialBoardState.push({image:`/images/rknight-${type}.svg`,x:6,y});
+    intialBoardState.push({image:`/images/bishop-${type}.svg`,x:2,y});
+    intialBoardState.push({image:`/images/bishop-${type}.svg`,x:5,y});
+    intialBoardState.push({image:`/images/queen-${type}.svg`,x:3,y});
+    intialBoardState.push({image:`/images/king-${type}.svg`,x:4,y});
 
 }
 
 for (let i=0;i<8;i++){
-pieces.push({image:"/images/pawn-b.svg",x:i,y:6});
+    intialBoardState.push({image:"/images/pawn-b.svg",x:i,y:6});
 }
 
 for (let i=0;i<8;i++){
-pieces.push({image:"/images/pawn-w.svg",x:i,y:1});
+    intialBoardState.push({image:"/images/pawn-w.svg",x:i,y:1});
 }
+
+
+export default function Chessboard(){
+const [pieces,setPieces] = useState<Piece[]>(intialBoardState);
+const chessboardRef = useRef<HTMLDivElement | null>(null);
+
 
 let activePiece: HTMLElement | null = null;
 
@@ -54,22 +62,47 @@ function grabPiece(e: React.MouseEvent){
 }
 
 function movePiece(e: React.MouseEvent){
-    if(activePiece){
+    const chessboard = chessboardRef.current;
+    if(activePiece && chessboard){
+        const minX = chessboard.offsetLeft -15;
+        const minY = chessboard.offsetTop -15;
+        const maxX = chessboard.offsetLeft + chessboard.clientWidth -60;
+        const maxY = chessboard.offsetTop +chessboard.clientHeight -70;
         const x = e.clientX - 50 ;
         const y = e.clientY - 50;
         activePiece.style.position = "absolute";
-        activePiece.style.left = `${x}px`;
-        activePiece.style.top = `${y}px`;
+         if(x < minX) {
+            activePiece.style.left = `${minX}px`;
+         }
+         else if(x> maxX) {
+            activePiece.style.left = `${maxX}px`;
+         } 
+         else {
+            activePiece.style.left = `${x}px`;
+         }
+
+         if(y < minY) {
+            activePiece.style.top = `${minY}px`;
+         }
+         else if(y> maxY) {
+            activePiece.style.top = `${maxY}px`;
+         } 
+         else {
+            activePiece.style.top = `${y}px`;
+         }
+
+
     }
 
 }
 
 function dropPiece(e: React.MouseEvent){
     if(activePiece) {
+        pieces[0].x = 5;
         activePiece =null;
     }
 }
-export default function Chessboard(){
+
 let board=[];
 for(let j=verticalaxis.length-1;j>=0;j--){
     for(let i=0;i<horizontalaxis.length;i++){
@@ -89,7 +122,9 @@ for(let j=verticalaxis.length-1;j>=0;j--){
         onMouseMove={(e)=> movePiece(e)} 
         onMouseDown={(e)=>grabPiece(e)} 
         onMouseUp={(e) => dropPiece(e)}
-        id="chessboard">
+        id="chessboard"
+        ref={chessboardRef}
+    >
         {board}
         
     </div>

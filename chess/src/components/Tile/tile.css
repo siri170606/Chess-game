@@ -1,0 +1,24 @@
+.tile{
+    height:100px;
+    width:100px;
+    display: grid;
+    place-content: center;
+  
+}
+.tile img {
+  max-width: 70%;
+  max-height: 70%;
+  place-content: center;
+  margin-left: 20px;
+  margin-top: 10px;
+
+}
+
+
+.black-tile{
+    background-color: rgb(244, 187, 81);
+  
+}
+.white-tile{
+    background-color: rgb(243, 207, 141);
+}

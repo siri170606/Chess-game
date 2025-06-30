@@ -1,9 +1,25 @@
 .tile{
-    height:100px;
-    width:100px;
+    height:77.5px;
+    width:77.5px;
     display: grid;
     place-content: center;
   
+}
+
+.tile .chess-piece {
+    width: 77.5px;
+    height: 77.5px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 80px;
+
+}
+.tile .chess-piece:hover {
+    cursor: grab;
+}
+
+.tile .chess-piece:active{
+    cursor: grabbing;
 }
 .tile img {
   max-width: 70%;

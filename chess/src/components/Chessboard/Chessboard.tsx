@@ -12,7 +12,20 @@ interface Piece{
 }
 const pieces:Piece[]=[];
 
+for(let p=0; p < 2; p++){
+    const type = (p === 0) ? "b" : "w";
+    const y= (p === 0) ? 7 : 0; 
+    
+pieces.push({image:`/images/rook-${type}.svg`,x:0,y});
+pieces.push({image:`/images/rook-${type}.svg`,x:7,y});
+pieces.push({image:`/images/rknight-${type}.svg`,x:1,y});
+pieces.push({image:`/images/rknight-${type}.svg`,x:6,y});
+pieces.push({image:`/images/bishop-${type}.svg`,x:2,y});
+pieces.push({image:`/images/bishop-${type}.svg`,x:5,y});
+pieces.push({image:`/images/queen-${type}.svg`,x:3,y});
+pieces.push({image:`/images/king-${type}.svg`,x:4,y});
 
+}
 
 for (let i=0;i<8;i++){
 pieces.push({image:"/images/pawn-b.svg",x:i,y:6});
@@ -22,24 +35,40 @@ for (let i=0;i<8;i++){
 pieces.push({image:"/images/pawn-w.svg",x:i,y:1});
 }
 
-pieces.push({image:"/images/rook-b.svg",x:0,y:7});
-pieces.push({image:"/images/rook-b.svg",x:7,y:7});
-pieces.push({image:"/images/rknight-b.svg",x:1,y:7});
-pieces.push({image:"/images/rknight-b.svg",x:6,y:7});
-pieces.push({image:"/images/bishop-b.svg",x:2,y:7});
-pieces.push({image:"/images/bishop-b.svg",x:5,y:7});
-pieces.push({image:"/images/queen-b.svg",x:3,y:7});
-pieces.push({image:"/images/king-b.svg",x:4,y:7});
+let activePiece: HTMLElement | null = null;
 
-pieces.push({image:"/images/rook-w.svg",x:0,y:0});
-pieces.push({image:"/images/rook-w.svg",x:7,y:0});
-pieces.push({image:"/images/rknight-w.svg",x:1,y:0});
-pieces.push({image:"/images/rknight-w.svg",x:6,y:0});
-pieces.push({image:"/images/bishop-w.svg",x:2,y:0});
-pieces.push({image:"/images/bishop-w.svg",x:5,y:0});
-pieces.push({image:"/images/queen-w.svg",x:3,y:0});
-pieces.push({image:"/images/king-w.svg",x:4,y:0});
+function grabPiece(e: React.MouseEvent){
+    const element = e.target as HTMLElement;
+    if(element.classList.contains("chess-piece")){
+        console.log(e); 
 
+        const x = e.clientX - 38.75 ;
+        const y = e.clientY - 38.75;
+        element.style.position = "absolute";
+        element.style.left = `${x}px`;
+        element.style.top = `${y}px`;
+
+        activePiece = element;
+    }
+    
+}
+
+function movePiece(e: React.MouseEvent){
+    if(activePiece){
+        const x = e.clientX - 50 ;
+        const y = e.clientY - 50;
+        activePiece.style.position = "absolute";
+        activePiece.style.left = `${x}px`;
+        activePiece.style.top = `${y}px`;
+    }
+
+}
+
+function dropPiece(e: React.MouseEvent){
+    if(activePiece) {
+        activePiece =null;
+    }
+}
 export default function Chessboard(){
 let board=[];
 for(let j=verticalaxis.length-1;j>=0;j--){
@@ -51,11 +80,18 @@ for(let j=verticalaxis.length-1;j>=0;j--){
             image=p.image;
            }
         })
-       board.push(<Tile image={image} number={number} />);
+       board.push(<Tile key={`&{j},${i}`} image={image} number={number} />);
        
     }
 }
-    return <div id="chessboard">{board}
+    return (
+    <div 
+        onMouseMove={(e)=> movePiece(e)} 
+        onMouseDown={(e)=>grabPiece(e)} 
+        onMouseUp={(e) => dropPiece(e)}
+        id="chessboard">
+        {board}
         
     </div>
+    );
 }

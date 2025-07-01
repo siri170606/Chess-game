@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './Chessboard.css';
 import Tile from '../Tile/tile';
+import Referee from "../../referee/Referee";
 
 const verticalaxis = [1, 2, 3, 4, 5, 6, 7, 8];
 const horizontalaxis = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
@@ -10,8 +11,23 @@ interface Piece {
   image: string;
   x: number;
   y: number;
+  type: PieceType;
+  team: TeamType;
+
 }
 
+export enum TeamType {
+  OPPONENT,
+  OUR
+}
+export enum PieceType {
+  PAWN,
+  BISHOP,
+  KNIGHT,
+  ROOK,
+  QUEEN,
+  KING
+}
 function fileFromCursor(x: number, boardLeft: number, squareSize: number) {
   return Math.floor((x - boardLeft) / squareSize);
 }
@@ -22,21 +38,22 @@ function rankFromCursor(y: number, boardTop: number, squareSize: number) {
 
 const intialBoardState: Piece[] = [];
 for (let p = 0; p < 2; p++) {
+  const teamType = (p===0) ? TeamType.OPPONENT : TeamType.OUR;
   const type = p === 0 ? 'b' : 'w';
   const y = p === 0 ? 7 : 0;
 
-  intialBoardState.push({ image: `/images/rook-${type}.svg`, x: 0, y });
-  intialBoardState.push({ image: `/images/rook-${type}.svg`, x: 7, y });
-  intialBoardState.push({ image: `/images/knight-${type}.svg`, x: 1, y });
-  intialBoardState.push({ image: `/images/knight-${type}.svg`, x: 6, y });
-  intialBoardState.push({ image: `/images/bishop-${type}.svg`, x: 2, y });
-  intialBoardState.push({ image: `/images/bishop-${type}.svg`, x: 5, y });
-  intialBoardState.push({ image: `/images/queen-${type}.svg`, x: 3, y });
-  intialBoardState.push({ image: `/images/king-${type}.svg`, x: 4, y });
+  intialBoardState.push({ image: `/images/rook-${type}.svg`, x: 0, y, type: PieceType.ROOK ,team: teamType});
+  intialBoardState.push({ image: `/images/rook-${type}.svg`, x: 7, y ,type: PieceType.ROOK,team: teamType});
+  intialBoardState.push({ image: `/images/knight-${type}.svg`, x: 1, y ,type: PieceType.KNIGHT,team: teamType});
+  intialBoardState.push({ image: `/images/knight-${type}.svg`, x: 6, y ,type: PieceType.KNIGHT,team: teamType});
+  intialBoardState.push({ image: `/images/bishop-${type}.svg`, x: 2, y ,type: PieceType.BISHOP,team: teamType});
+  intialBoardState.push({ image: `/images/bishop-${type}.svg`, x: 5, y ,type: PieceType.BISHOP,team: teamType});
+  intialBoardState.push({ image: `/images/queen-${type}.svg`, x: 3, y ,type: PieceType.QUEEN,team: teamType});
+  intialBoardState.push({ image: `/images/king-${type}.svg`, x: 4, y ,type: PieceType.KING,team: teamType});
 }
 for (let i = 0; i < 8; i++) {
-  intialBoardState.push({ image: '/images/pawn-b.svg', x: i, y: 6 });
-  intialBoardState.push({ image: '/images/pawn-w.svg', x: i, y: 1 });
+  intialBoardState.push({ image: '/images/pawn-b.svg', x: i, y: 6 ,type: PieceType.PAWN,team: TeamType.OPPONENT});
+  intialBoardState.push({ image: '/images/pawn-w.svg', x: i, y: 1 ,type: PieceType.PAWN,team: TeamType.OUR});
 }
 
 export default function Chessboard() {
@@ -45,6 +62,7 @@ export default function Chessboard() {
   const [gridY, setGridY] = useState(0);
   const [pieces, setPieces] = useState<Piece[]>(intialBoardState);
   const chessboardRef = useRef<HTMLDivElement | null>(null);
+  const referee = new Referee();
 
   function grabPiece(e: React.MouseEvent) {
     const element = e.target as HTMLElement;
@@ -88,8 +106,22 @@ export default function Chessboard() {
       const newX = fileFromCursor(e.clientX, chessboard.offsetLeft, square);
       const newY = rankFromCursor(e.clientY, chessboard.offsetTop, square);
 
+    const currentPiece = pieces.find(p => p.x === gridX && p.y === gridY);
+    if (!currentPiece) return;
+
+    // Validate the move before updating
+    const isValid = referee.isValidMove(gridX, gridY, newX, newY, currentPiece.type,currentPiece.team);
+    if (!isValid) {
+      // Invalid move — cancel drag
+      setActivePiece(null);
+      return;
+    }
+
+      
       setPieces((prev) =>
+        
         prev.map((p) =>
+          
           p.x === gridX && p.y === gridY ? { ...p, x: newX, y: newY } : p
         )
       );

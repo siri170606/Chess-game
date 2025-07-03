@@ -109,7 +109,7 @@ export default function Chessboard() {
       const currentPiece = pieces.find(p => p.x === gridX && p.y === gridY);
       if (!currentPiece) return;
 
-      const isValid = referee.isValidMove(gridX, gridY, newX, newY, currentPiece.type, currentPiece.team);
+      const isValid = referee.isValidMove(gridX, gridY, newX, newY, currentPiece.type, currentPiece.team,pieces);
 
       if (isValid) {
         // Update state

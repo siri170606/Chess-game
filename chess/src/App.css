@@ -2,5 +2,9 @@
   display:grid;
   place-content:center;
   height:100vh;
-  background-color: black;
+background-color: #4B4E53;
+background-image: linear-gradient(147deg, #4B4E53 0%, #000000 74%);
+
+
+
 }

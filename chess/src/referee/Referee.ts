@@ -10,6 +10,12 @@ export default class Referee {
     boardState: Piece[],
     lastMove?: { fromX: number; fromY: number; toX: number; toY: number; piece: Piece }
   ): boolean {
+    if (type === PieceType.KNIGHT) {
+      return this.isValidKnightMove(initialposition, desiredposition, team, boardState);
+    }
+    if (type === PieceType.BISHOP) {
+      return this.isValidBishopMove(initialposition, desiredposition, team, boardState);
+    }
     if (type !== PieceType.PAWN) return true;
 
     const direction = team === TeamType.OUR ? 1 : -1;
@@ -67,6 +73,68 @@ export default class Referee {
     // TODO: Add en passant and promotion logic
 
     return false;
+  }
+  private isValidKnightMove(
+    initial: Position,
+    desired: Position,
+    team: TeamType,
+    board: Piece[]
+  ): boolean {
+
+    const deltaX = Math.abs(desired.x - initial.x);
+    const deltaY = Math.abs(desired.y - initial.y);
+
+    console.log(`Knight move from (${initial.x},${initial.y}) to (${desired.x},${desired.y})`);
+
+    const isLShaped =
+      (deltaX === 2 && deltaY === 1) || // Right/Left horizontal L
+      (deltaX === 1 && deltaY === 2);  // Up/Down vertical L
+    
+    if (!isLShaped) return false;
+
+    const destinationPiece = board.find(
+      p => p.position.x === desired.x && p.position.y === desired.y
+    );
+
+    if (!destinationPiece) return true;
+
+    if (destinationPiece.team === team) return false;
+
+    return true;
+  }
+
+  private isValidBishopMove(
+    initial: Position,
+    desired: Position,
+    team: TeamType,
+    board: Piece[]
+  ): boolean {
+    const deltaX = desired.x - initial.x;
+    const deltaY = desired.y - initial.y;
+
+    // Check if the move is diagonally valid
+    if (Math.abs(deltaX) !== Math.abs(deltaY)) return false;
+
+    const stepX = deltaX > 0 ? 1 : -1;
+    const stepY = deltaY > 0 ? 1 : -1;
+
+    let x = initial.x + stepX;
+    let y = initial.y + stepY;
+
+    while (x !== desired.x && y !== desired.y) {
+      if (this.tileIsOccupied(x, y, board)) {
+        return false;
+      }
+      x += stepX;
+      y += stepY;
+    }
+
+    const destinationPiece = board.find(
+      p => p.position.x === desired.x && p.position.y === desired.y
+    );
+
+    if (!destinationPiece) return true;
+    return destinationPiece.team !== team;
   }
 
   private tileIsOccupied(x: number, y: number, boardState: Piece[]): boolean {

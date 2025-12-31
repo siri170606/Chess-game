@@ -29,6 +29,9 @@ export default class Referee {
     if(type === PieceType.QUEEN) {
       return this.isValidQueenMove(initialposition, desiredposition, team, boardState);
     }
+    if(type === PieceType.KING) {
+      return this.isValidKingMove(initialposition, desiredposition, team, boardState);
+    }
     if (type !== PieceType.PAWN) return true;
 
     const direction = team === TeamType.OUR ? 1 : -1;
@@ -191,6 +194,25 @@ export default class Referee {
      return (
       this.isValidBishopMove(initial, desired, team, board) || this.isValidRookMove(initial, desired, team, board)
      );
+  }
+
+  private isValidKingMove(
+    initial: Position,
+    desired: Position,
+    team: TeamType,
+    board: Piece[]
+  ): boolean {
+      const deltaX = Math.abs(desired.x - initial.x);
+      const deltaY = Math.abs(desired.y - initial.y);
+
+      if (deltaX > 1 || deltaY > 1) return false;
+
+      const destinationPiece = board.find(
+        p => p.position.x === desired.x && p.position.y === desired.y
+      );
+
+      if (!destinationPiece) return true;
+      return destinationPiece.team !== team;
   }
 
   private tileIsOccupied(x: number, y: number, boardState: Piece[]): boolean {

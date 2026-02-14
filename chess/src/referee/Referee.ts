@@ -3,13 +3,14 @@ import { PieceType,TeamType,Piece,Position } from "../Constants";
 
 export default class Referee {
   isValidMove(
-    initialposition : Position,
+    initialposition : Position,// git-change-check
     desiredposition : Position,
     type: PieceType,
     team: TeamType,
     boardState: Piece[],
     lastMove?: { fromX: number; fromY: number; toX: number; toY: number; piece: Piece }
   ): boolean {
+
     if (
       initialposition.x === desiredposition.x &&
       initialposition.y === desiredposition.y
@@ -32,61 +33,71 @@ export default class Referee {
     if(type === PieceType.KING) {
       return this.isValidKingMove(initialposition, desiredposition, team, boardState);
     }
-    if (type !== PieceType.PAWN) return true;
-
-    const direction = team === TeamType.OUR ? 1 : -1;
-    const startRow = team === TeamType.OUR ? 1 : 6;
-
-    const deltaX = desiredposition.x - initialposition.x;
-    const deltaY = desiredposition.y - initialposition.y;
-
-    console.log(`Pawn: (${initialposition.x},${initialposition.y}) → (${desiredposition.x},${desiredposition.y})`);
-
-    const destinationOccupied = this.tileIsOccupied(desiredposition.x, desiredposition.y, boardState);
-
-    // Move forward one square
-    if (deltaX === 0 && deltaY === direction && !destinationOccupied) {
-      return true;
+    if (type === PieceType.PAWN) {
+      return this.isValidPawnMove(initialposition,desiredposition,team,boardState,lastMove);
     }
 
-    // Move forward two squares from starting position
-    if (
-      deltaX === 0 &&
-      deltaY === 2 * direction &&
-      initialposition.y === startRow &&
-      !this.tileIsOccupied(initialposition.x, initialposition.y + direction, boardState)&&
-      !destinationOccupied
-    ) {
-      return true;
-    }
-
-    // Diagonal capture
-    if (
-      Math.abs(deltaX) === 1 &&
-      deltaY === direction &&
-      this.tileIsOccupiedByEnemy(desiredposition.x, desiredposition.y, team, boardState)
-    ) {
-      return true;
-    }
-     
-    // En Passant
-    if (
-      Math.abs(desiredposition.x - initialposition.x) === 1 &&
-      desiredposition.y - initialposition.y === direction
-    ) {
-      if (
-        lastMove &&
-        lastMove.piece.type === PieceType.PAWN &&
-        lastMove.piece.team !== team &&
-        Math.abs(lastMove.fromY - lastMove.toY) === 2 &&        // it was a double step
-        lastMove.toY === initialposition.y &&                   // the pawn is now adjacent to ours
-        lastMove.toX === desiredposition.x                      // the opponent pawn is in the target file
-      ) {
-        return true;
-      }
-    }
     return false;
   }
+  private isValidPawnMove(
+  initial: Position,
+  desired: Position,
+  team: TeamType,
+  board: Piece[],
+  lastMove?: { fromX: number; fromY: number; toX: number; toY: number; piece: Piece }
+): boolean {
+
+  const direction = team === TeamType.OUR ? 1 : -1;
+  const startRow = team === TeamType.OUR ? 1 : 6;
+
+  const deltaX = desired.x - initial.x;
+  const deltaY = desired.y - initial.y;
+
+  const destinationOccupied = this.tileIsOccupied(desired.x, desired.y, board);
+
+  // Forward one
+  if (deltaX === 0 && deltaY === direction && !destinationOccupied) {
+    return true;
+  }
+
+  // Forward two (first move)
+  if (
+    deltaX === 0 &&
+    deltaY === 2 * direction &&
+    initial.y === startRow &&
+    !this.tileIsOccupied(initial.x, initial.y + direction, board) &&
+    !destinationOccupied
+  ) {
+    return true;
+  }
+
+  // Diagonal capture
+  if (
+    Math.abs(deltaX) === 1 &&
+    deltaY === direction &&
+    this.tileIsOccupiedByEnemy(desired.x, desired.y, team, board)
+  ) {
+    return true;
+  }
+
+  // En passant
+  if (
+    Math.abs(deltaX) === 1 &&
+    deltaY === direction &&
+    !destinationOccupied &&
+    lastMove &&
+    lastMove.piece.type === PieceType.PAWN &&
+    lastMove.piece.team !== team &&
+    Math.abs(lastMove.fromY - lastMove.toY) === 2 &&
+    lastMove.toY === initial.y &&
+    lastMove.toX === desired.x
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
   private isValidKnightMove(
     initial: Position,
     desired: Position,
